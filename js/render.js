@@ -89,12 +89,12 @@ function renderActionPanel() {
         <button class="action-button" type="button" data-action="refresh-all">
           <span class="action-copy">
             <strong>全部刷新</strong>
-            <span>当前默认刷新实时数据，失败时自动回退 mock</span>
+            <span>当前只刷新实时数据，不再回退 mock</span>
           </span>
           <span class="pill neutral">刷新</span>
         </button>
       </div>
-      <div id="actionStatus" class="status-line">当前页面默认优先加载实时数据，接口失败时自动回退到 mock。</div>
+      <div id="actionStatus" class="status-line">当前页面只展示实时数据，接口异常时会直接显示错误。</div>
     </section>
   `;
 }

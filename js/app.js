@@ -1,30 +1,12 @@
-import { loadLiveData, loadMockData } from "./data-service.js";
+import { loadLiveData } from "./data-service.js";
 import { renderApp, renderError, renderPageMeta, showToast, updateActionStatus } from "./render.js";
 
 const APP_CONTAINER = document.getElementById("app");
 const STORAGE_KEY = "origin-monitor:etherscan-api-key";
 
-function getRequestedSource() {
-  const url = new URL(window.location.href);
-  return url.searchParams.get("source") === "mock" ? "mock" : "live";
-}
-
 async function getDashboardData() {
-  const requestedSource = getRequestedSource();
-
-  if (requestedSource === "live") {
-    try {
-      const liveData = await loadLiveData();
-      return { data: liveData, sourceLabel: "Live" };
-    } catch (error) {
-      const mockData = await loadMockData();
-      mockData.meta.notice = `实时数据加载失败，当前自动回退到 mock 数据。失败原因：${error.message}`;
-      return { data: mockData, sourceLabel: "Mock" };
-    }
-  }
-
-  const mockData = await loadMockData();
-  return { data: mockData, sourceLabel: "Mock" };
+  const liveData = await loadLiveData();
+  return { data: liveData, sourceLabel: "Live" };
 }
 
 async function initializeDashboard() {
@@ -37,6 +19,12 @@ async function initializeDashboard() {
     if (data.meta?.notice) updateActionStatus(data.meta.notice, "watch");
     else updateActionStatus("页面已加载，可继续替换 mock 数据或接入真实同步脚本。");
   } catch (error) {
+    renderPageMeta({
+      title: "鲸鱼 LGNS 监控台",
+      subtitle: "Treasury · DAI池 · 交易量 · 大户追踪 · 预警",
+      lastUpdated: "--"
+    }, "Live");
+    updateActionStatus(`实时数据加载失败：${error.message}`, "danger");
     renderError(APP_CONTAINER, error);
   }
 }
