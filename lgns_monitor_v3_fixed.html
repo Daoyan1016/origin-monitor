@@ -237,8 +237,8 @@ function updateDex(data) {
   document.getElementById("priceChange").textContent = "24h: " + (data.priceChange >= 0 ? "+" : "") + data.priceChange.toFixed(2) + "%";
 
   document.getElementById("volume").textContent = "$" + (data.volume / 1e6).toFixed(1) + "M";
-  const projectRevenue = data.volume * 0.5 * 0.05;
-  document.getElementById("volumeSub").textContent = "税收约 $" + (projectRevenue / 1e4).toFixed(0) + "万/天";
+  const projectRevenue = data.sellVolume * 0.05;
+  document.getElementById("volumeSub").textContent = "卖税约 $" + (projectRevenue / 1e4).toFixed(0) + "万/天";
   document.getElementById("volumeSub").style.color = data.volume < 2e7 ? "#ffaa00" : "#666";
 
   let revenueStatus = "良好";
@@ -256,9 +256,10 @@ function updateDex(data) {
 
   document.getElementById("volTrend").innerHTML =
     "当前交易量：<b>$" + (data.volume / 1e6).toFixed(1) + "M / 24h</b><br>" +
-    "当前项目方日收入：<b>$" + (projectRevenue / 1e4).toFixed(0) + "万</b><br>" +
+    "当前项目方日收入估算：<b>$" + (projectRevenue / 1e4).toFixed(0) + "万</b><br>" +
     "当前状态：<b style='color:" + revenueColor + "'>" + revenueStatus + "</b><br>" +
-    "<span style='color:#666'>项目方收入来源：按 24h 交易额 × 50% 买盘占比 × 5% 税率 估算，当前约为 $" + (projectRevenue / 1e4).toFixed(0) + "万/天</span><br>" +
+    "<span style='color:#666'>项目方收入来源：按 24h 卖出金额 × 5% 卖税估算，当前约为 $" + (projectRevenue / 1e4).toFixed(0) + "万/天</span><br>" +
+    "<span style='color:#666'>注意：当前页面里的卖出金额仍是用 24h 总成交额按买卖笔数占比做的近似估算，不是链上逐笔卖单求和</span><br>" +
     "<span style='color:#666'>状态判断依据：$40M+=良好，$20M-$40M=还行，$10M-$20M=动力减弱，<$10M=可能停运</span>";
 
   document.getElementById("buyVol").textContent = "$" + (data.buyVolume / 1e6).toFixed(1) + "M";
