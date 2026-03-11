@@ -246,6 +246,15 @@ async function fetchJson(url, options = {}) {
   return await response.json();
 }
 
+async function loadSyncedData() {
+  const dataUrl = new URL("../data/live-data.json", import.meta.url);
+  const payload = await fetchJson(dataUrl);
+  if (!payload?.meta || !payload?.coreStats) {
+    throw new Error("live-data.json 结构无效");
+  }
+  return payload;
+}
+
 async function callEtherscan(params) {
   const apiKey = getStoredApiKey();
   if (!apiKey) {
@@ -630,6 +639,12 @@ export async function loadMockData() {
 }
 
 export async function loadLiveData() {
+  try {
+    return await loadSyncedData();
+  } catch (error) {
+    // 同源同步数据不存在时，再回退到浏览器直连模式。
+  }
+
   const [dex, daiReserve, transfers48h, treasuryTransactions] = await Promise.all([
     fetchDexReference(),
     fetchDaiReserve(),
