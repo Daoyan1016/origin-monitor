@@ -2,11 +2,11 @@ import { loadLiveData, loadMockData } from "./data-service.js";
 import { renderApp, renderError, renderPageMeta, showToast, updateActionStatus } from "./render.js";
 
 const APP_CONTAINER = document.getElementById("app");
-const STORAGE_KEY = "origin-monitor:api-key";
+const STORAGE_KEY = "origin-monitor:etherscan-api-key";
 
 function getRequestedSource() {
   const url = new URL(window.location.href);
-  return url.searchParams.get("source") === "live" ? "live" : "mock";
+  return url.searchParams.get("source") === "mock" ? "mock" : "live";
 }
 
 async function getDashboardData() {
@@ -18,7 +18,7 @@ async function getDashboardData() {
       return { data: liveData, sourceLabel: "Live" };
     } catch (error) {
       const mockData = await loadMockData();
-      mockData.meta.notice = "实时数据接口尚未接入，当前自动回退到 mock 数据。";
+      mockData.meta.notice = `实时数据加载失败，当前自动回退到 mock 数据。失败原因：${error.message}`;
       return { data: mockData, sourceLabel: "Mock" };
     }
   }
@@ -61,7 +61,7 @@ async function handleNotification() {
 
 function handleApiKey() {
   const currentValue = window.localStorage.getItem(STORAGE_KEY) || "";
-  const nextValue = window.prompt("请输入新的 API Key。当前先保存在浏览器本地，后续可接入真实接口。", currentValue);
+  const nextValue = window.prompt("请输入新的 Etherscan API Key。当前保存在浏览器本地，刷新后会直接用于实时数据加载。", currentValue);
 
   if (nextValue === null) {
     updateActionStatus("已取消 API Key 修改。");
@@ -77,8 +77,11 @@ function handleApiKey() {
   }
 
   window.localStorage.setItem(STORAGE_KEY, trimmed);
-  updateActionStatus("API Key 已保存到浏览器本地。当前页面仍使用 mock 数据。", "good");
+  updateActionStatus("Etherscan API Key 已保存到浏览器本地。正在准备重新加载实时数据。", "good");
   showToast("API Key 已保存。");
+  window.setTimeout(() => {
+    initializeDashboard();
+  }, 150);
 }
 
 async function handleRefresh(button) {
@@ -107,7 +110,7 @@ function bindActions() {
       if (action === "refresh-all") {
         await handleRefresh(button);
       }
-    }, { once: true });
+    });
   });
 }
 

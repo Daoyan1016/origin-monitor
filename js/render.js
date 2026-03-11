@@ -35,6 +35,33 @@ function formatPercent(value) {
   return `${Math.max(0, Math.min(100, value)).toFixed(1)}%`;
 }
 
+function parseMoneyText(value = "") {
+  const text = String(value).trim();
+  if (!text) {
+    return 0;
+  }
+
+  const unit = text.slice(-1).toUpperCase();
+  const numeric = Number(text.replace(/[^\d.-]/g, ""));
+  if (!Number.isFinite(numeric)) {
+    return 0;
+  }
+
+  if (unit === "B") {
+    return numeric * 1e9;
+  }
+
+  if (unit === "M") {
+    return numeric * 1e6;
+  }
+
+  if (unit === "K") {
+    return numeric * 1e3;
+  }
+
+  return numeric;
+}
+
 function renderActionPanel() {
   return `
     <section class="panel" aria-labelledby="actions-title">
@@ -62,12 +89,12 @@ function renderActionPanel() {
         <button class="action-button" type="button" data-action="refresh-all">
           <span class="action-copy">
             <strong>全部刷新</strong>
-            <span>当前刷新 mock 数据，后续可切换成真实拉取</span>
+            <span>当前默认刷新实时数据，失败时自动回退 mock</span>
           </span>
           <span class="pill neutral">刷新</span>
         </button>
       </div>
-      <div id="actionStatus" class="status-line">当前为静态工程版，按钮保留基础交互与状态占位。</div>
+      <div id="actionStatus" class="status-line">当前页面默认优先加载实时数据，接口失败时自动回退到 mock。</div>
     </section>
   `;
 }
@@ -157,8 +184,8 @@ function renderDaiReserve(daiReserve = {}, coreStats = {}) {
 }
 
 function renderVolumeAnalysis(volumeAnalysis = {}, coreStats = {}) {
-  const buyRaw = Number(String(volumeAnalysis.buyAmount || "").replace(/[^\d.-]/g, ""));
-  const sellRaw = Number(String(volumeAnalysis.sellAmount || "").replace(/[^\d.-]/g, ""));
+  const buyRaw = parseMoneyText(volumeAnalysis.buyAmount || "");
+  const sellRaw = parseMoneyText(volumeAnalysis.sellAmount || "");
   const total = Math.max(buyRaw + sellRaw, 1);
   const buyPct = (buyRaw / total) * 100;
   const sellPct = (sellRaw / total) * 100;
